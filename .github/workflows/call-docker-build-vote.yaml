@@ -10,7 +10,7 @@ on:
 env:
   IMAGE_NAME: ajeetraina/scout-demo-voting-app-vote:v0.1
   SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
-  DOCKERFILE_PATH: Dockerfile
+  DOCKERFILE_PATH: vote/Dockerfile
 
 jobs:
   build:
