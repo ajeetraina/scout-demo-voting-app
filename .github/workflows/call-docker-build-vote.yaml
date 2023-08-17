@@ -8,7 +8,7 @@ on:
     branches: ["main"]
 
 env:
-  IMAGE_NAME: ajeetraina/scout-demo-voting-app-vote:v0.1
+  IMAGE_NAME: ajeetraina/scout-demo-voting-app-vote
   SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
   DOCKERFILE_PATH: Dockerfile
 
