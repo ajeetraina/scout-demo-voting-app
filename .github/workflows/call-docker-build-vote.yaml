@@ -8,9 +8,10 @@ on:
     branches: ["main"]
 
 env:
+  REGISTRY: docker.io
   IMAGE_NAME: ajeetraina/scout-demo-voting-app-vote
   SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
-  DOCKERFILE_PATH: Dockerfile
+  DOCKERFILE_PATH: vote/Dockerfile
 
 jobs:
   build:
@@ -28,17 +29,21 @@ jobs:
       - name: Log into registry
         uses: docker/login-action@v2.1.0
         with:
-          username: ajeetraina
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PAT }}
 
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v4.4.0
         with:
-          images: ${{ env.IMAGE_NAME }}
-          labels: |
-            org.opencontainers.image.revision=${{ env.SHA }}
-            com.docker.image.source.entrypoint=${{ env.DOCKERFILE_PATH }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        labels: |
+          org.opencontainers.image.revision=${{ env.SHA }}
+        tags: |
+          type=edge,branch=$repo.default_branch
+          type=semver,pattern=v{{version}}
+          type=sha,prefix=,suffix=,format=short
 
       - name: Build and push Docker image on push
         id: build-and-push
@@ -46,45 +51,20 @@ jobs:
         uses: docker/build-push-action@v4.0.0
         with:
           context: .
-          load: false
           push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:v0.1
-            ${{ env.IMAGE_NAME }}:latest
-          labels: |
-            org.opencontainers.image.revision=${{ env.SHA }}
-            com.docker.image.source.entrypoint=${{ env.DOCKERFILE_PATH }}
-          platforms: "linux/amd64,linux/arm64"
-          sbom: false
-          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Analyze for critical and high CVEs
-        id: docker-scout-cves
-        if: ${{ github.event_name != 'pull_request_target' }}
-        uses: docker/scout-action@788bd7991dd23939af62db37c4b77ec009021e17
-        with:
-          command: cves
-          image: ${{ steps.meta.outputs.tags }}
-          sarif-file: sarif.output.json
-          platform: "linux/arm64"
-          summary: true
-
-      - name: Upload SARIF result
-        id: upload-sarif
-        if: ${{ github.event_name != 'pull_request_target' }}
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: sarif.output.json
-
-      - name: Compare to deployed image
-        id: docker-scout-compare
-        if: ${{ github.event_name == 'pull_request_target' }}
-        uses: docker/scout-action@788bd7991dd23939af62db37c4b77ec009021e17
+      - name: Docker Scout
+        id: docker-scout
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: docker/scout-action@dd36f5b0295baffa006aa6623371f226cc03e506
         with:
           command: compare
           image: ${{ steps.meta.outputs.tags }}
+          to: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:edge
+          ignore-unchanged: true
           only-severities: critical,high
-          to-stream: prod
-          platform: "linux/arm64"
-          exit-code: true       
-          summary: true
+          token: ${{ secrets.DOCKER_PAT }}
