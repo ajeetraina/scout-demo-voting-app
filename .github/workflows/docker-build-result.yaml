@@ -2,10 +2,10 @@ name: docker-build-demo
 
 on:
   push:
-    branches: ["main"]
+    branches: ["vulnerable"]
     tags: ["v*.*.*"]
   pull_request_target:
-    branches: ["main"]
+    branches: ["vulnerable"]
 
 env:
   IMAGE_NAME: ajeetraina/scout-demo-voting-app-result
