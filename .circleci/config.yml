@@ -1,0 +1,79 @@
+version: 2.1
+
+jobs:
+  build_and_scout_vote:
+    docker:
+      - image: cimg/base:stable
+    environment:
+      IMAGE_TAG: docker/vote:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.24
+      - run:
+          name: Install Docker Scout
+          command: |
+            env
+            curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /home/circleci/bin
+            echo $DOCKER_HUB_PAT | docker login -u $DOCKER_HUB_USER --password-stdin
+      - run:
+          name: Build Docker image for vote service
+          command: docker build -t $IMAGE_TAG ./vote
+      - run:
+          name: Scan image for CVEs (vote service)
+          command: |
+            docker-scout cves $IMAGE_TAG --exit-code --only-severity critical,high
+
+  build_and_scout_result:
+    docker:
+      - image: cimg/base:stable
+    environment:
+      IMAGE_TAG: docker/result:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.24
+      - run:
+          name: Install Docker Scout
+          command: |
+            env
+            curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /home/circleci/bin
+            echo $DOCKER_HUB_PAT | docker login -u $DOCKER_HUB_USER --password-stdin
+      - run:
+          name: Build Docker image for result service
+          command: docker build -t $IMAGE_TAG ./result
+      - run:
+          name: Scan image for CVEs (result service)
+          command: |
+            docker-scout cves $IMAGE_TAG --exit-code --only-severity critical,high
+
+  build_and_scout_worker:
+    docker:
+      - image: cimg/base:stable
+    environment:
+      IMAGE_TAG: docker/worker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.24
+      - run:
+          name: Install Docker Scout
+          command: |
+            env
+            curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /home/circleci/bin
+            echo $DOCKER_HUB_PAT | docker login -u $DOCKER_HUB_USER --password-stdin
+      - run:
+          name: Build Docker image for worker service
+          command: docker build -t $IMAGE_TAG ./worker
+      - run:
+          name: Scan image for CVEs (worker service)
+          command: |
+            docker-scout cves $IMAGE_TAG --exit-code --only-severity critical,high
+
+workflows:
+  version: 2
+  build-voting-app-services:
+    jobs:
+      - build_and_scout_vote
+      - build_and_scout_result
+      - build_and_scout_worker
