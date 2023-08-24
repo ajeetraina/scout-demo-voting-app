@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     // Install Docker Scout
-                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin'
+                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
 
                     // Log into Docker Hub
                     sh "echo $DOCKER_HUB_PAT | docker login -u $DOCKER_HUB_USER --password-stdin"
@@ -30,7 +30,7 @@ pipeline {
             steps {
                 script {
                     // Install Docker Scout
-                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin'
+                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
 
                     // Log into Docker Hub
                     sh "echo $DOCKER_HUB_PAT | docker login -u $DOCKER_HUB_USER --password-stdin"
@@ -49,7 +49,7 @@ pipeline {
             steps {
                 script {
                     // Install Docker Scout
-                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin'
+                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
 
                     // Log into Docker Hub
                     sh "echo $DOCKER_HUB_PAT | docker login -u $DOCKER_HUB_USER --password-stdin"
