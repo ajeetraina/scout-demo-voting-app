@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_HUB_USER = credentials('docker-hub-user')
-        DOCKER_HUB_PAT = credentials('docker-hub-pat')
+        DOCKER_HUB_USER = credentials('DOCKER_HUB_USER ')
+        DOCKER_HUB_PAT = credentials('DOCKER_HUB_PAT')
     }
     
     stages {
