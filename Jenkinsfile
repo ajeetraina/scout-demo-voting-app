@@ -23,18 +23,18 @@ pipeline {
                         string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')
                     ]) {
                         sh """
-                        echo \$DOCKER_HUB_PAT | \$dockerBin login -u \$DOCKER_HUB_USER_CRED --password-stdin
+                        echo \$DOCKER_HUB_PAT | docker login -u \$DOCKER_HUB_USER_CRED --password-stdin
                         """
                     }
 
                     // Build and push vote Docker Image
                     sh """
-                    \$dockerBin build --pull -t \$DOCKER_HUB_USER/vote:\$GIT_COMMIT ./vote
-                    \$dockerBin push \$DOCKER_HUB_USER/vote:\$GIT_COMMIT
+                    docker build --pull -t \$DOCKER_HUB_USER/vote:\$GIT_COMMIT ./vote
+                    docker push \$DOCKER_HUB_USER/vote:\$GIT_COMMIT
                     """
 
                     // Analyze and fail on critical or high vulnerabilities
-                    sh "\$dockerBin-scout cves \$DOCKER_HUB_USER/vote:\$GIT_COMMIT --exit-code --only-severity critical,high"
+                    sh "docker-scout cves \$DOCKER_HUB_USER/vote:\$GIT_COMMIT --exit-code --only-severity critical,high"
                 }
             }
         }
