@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_HUB_USER = credentials('DOCKER_HUB_USER')
         DOCKER_HUB_PAT = credentials('DOCKER_HUB_PAT')
-        DOCKER_BIN = '/usr/bin/docker' // Replace with the actual path to the Docker binary on your system
     }
 
     stages {
@@ -20,7 +19,7 @@ pipeline {
                         string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')
                     ]) {
                         sh """
-                        echo \$DOCKER_HUB_PASSWORD | ${DOCKER_BIN} login -u \$DOCKER_HUB_USERNAME --password-stdin
+                        echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin
                         """
                     }
 
@@ -34,8 +33,8 @@ pipeline {
                     // Build, push, and analyze Docker images for each service
                     serviceImageMap.each { serviceName, imageName ->
                         sh "echo 'Building $serviceName service'"
-                        sh "${DOCKER_BIN} build --pull -t $imageName ./$serviceName"
-                        sh "${DOCKER_BIN} push $imageName"
+                        sh "docker build --pull -t $imageName ./$serviceName"
+                        sh "docker push $imageName"
                         sh "echo 'Analyzing $serviceName service for vulnerabilities'"
                         sh "docker-scout cves $imageName --exit-code --only-severity critical,high"
                     }
