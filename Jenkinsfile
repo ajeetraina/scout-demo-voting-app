@@ -20,11 +20,11 @@ pipeline {
 
                     // Log into Docker Hub
                    withCredentials([usernameColonPassword(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER_CRED'),
-                 string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')]) {
-                 sh """
-                echo \$DOCKER_HUB_PAT | ${dockerBin} login -u \$DOCKER_HUB_USER_CRED --password-stdin
-                """
-                  }
+                       string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')]) {
+                       sh """
+                       echo \$DOCKER_HUB_PAT | ${dockerBin} login -u \$DOCKER_HUB_USER_CRED --password-stdin
+                       """
+                     }
 
                     // Build and push vote Docker Image
                     sh """
