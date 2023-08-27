@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'docker:20' // Use a Docker image that has Docker installed
+            image 'docker:17.09.1-ce' // Use a Docker image that has Docker installed
             args '--group-add $(stat -c %g /var/run/docker.sock)' // Grants access to Docker socket
         }
     }
