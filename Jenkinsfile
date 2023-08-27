@@ -10,9 +10,7 @@ pipeline {
         stage('Build and Analyze Vote Service') {
             steps {
                 script {
-                    def dockerPath = tool name: 'Docker', type: 'Tool'
-                    def dockerBin = "${dockerPath}/bin/docker"
-
+                    
                     // Install Docker Scout
                     sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
 
