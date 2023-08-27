@@ -15,7 +15,10 @@ pipeline {
             steps {
                 script {
                     // Install Docker Scout
-                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin'
+                    def installResult = sh(script: 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin', returnStatus: true)
+                    if (installResult != 0) {
+                        error "Failed to install Docker Scout"
+                    }
 
                     // Analyze and fail on critical or high vulnerabilities
                     sh "docker-scout cves $IMAGE_TAG --exit-code --only-severity critical,high"
