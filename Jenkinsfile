@@ -2,91 +2,42 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_USER = credentials('DOCKER_HUB_USER')
-        DOCKER_HUB_PAT = credentials('DOCKER_HUB_PAT')
+        dockerPath = tool name: 'Docker', type: 'Tool'
+        dockerBin = "${dockerPath}/bin/docker"
     }
 
     stages {
-        stage('Build and Analyze Vote Service') {
+        stage('Build and Analyze Services') {
             steps {
                 script {
                     // Install Docker Scout
                     sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
 
                     // Log into Docker Hub
-                    withCredentials([string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT'),
-                                     string(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER')]) {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'DOCKER_HUB_USER', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD'),
+                        string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')
+                    ]) {
                         sh """
-                        echo \$DOCKER_HUB_PAT | ${dockerBin} login -u \$DOCKER_HUB_USER --password-stdin
+                        echo \$DOCKER_HUB_PASSWORD | ${dockerBin} login -u \$DOCKER_HUB_USERNAME --password-stdin
                         """
                     }
 
-                    // Build and push vote Docker Image
-                    sh """
-                    ${dockerBin} build --pull -t \$DOCKER_HUB_USER/vote:\$GIT_COMMIT ./vote
-                    ${dockerBin} push \$DOCKER_HUB_USER/vote:\$GIT_COMMIT
-                    """
+                    // Define Docker image names for each service
+                    def serviceImageMap = [
+                        'vote': "\$DOCKER_HUB_USERNAME/vote:\$GIT_COMMIT",
+                        'worker': "\$DOCKER_HUB_USERNAME/worker:\$GIT_COMMIT",
+                        'result': "\$DOCKER_HUB_USERNAME/result:\$GIT_COMMIT"
+                    ]
 
-                    // Analyze and fail on critical or high vulnerabilities
-                    sh "docker-scout cves \$DOCKER_HUB_USER/vote:\$GIT_COMMIT --exit-code --only-severity critical,high"
-                }
-            }
-        }
-
-        stage('Build and Analyze Worker Service') {
-            steps {
-                script {
-                    def dockerPath = tool name: 'Docker', type: 'Tool'
-                    def dockerBin = "${dockerPath}/bin/docker"
-
-                    // Install Docker Scout
-                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
-
-                    // Log into Docker Hub
-                    withCredentials([string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT'),
-                                     string(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER')]) {
-                        sh """
-                        echo \$DOCKER_HUB_PAT | ${dockerBin} login -u \$DOCKER_HUB_USER --password-stdin
-                        """
+                    // Build, push, and analyze Docker images for each service
+                    serviceImageMap.each { serviceName, imageName ->
+                        sh "echo 'Building $serviceName service'"
+                        sh "${dockerBin} build --pull -t $imageName ./$serviceName"
+                        sh "${dockerBin} push $imageName"
+                        sh "echo 'Analyzing $serviceName service for vulnerabilities'"
+                        sh "docker-scout cves $imageName --exit-code --only-severity critical,high"
                     }
-
-                    // Build and push worker Docker Image
-                    sh """
-                    ${dockerBin} build --pull -t \$DOCKER_HUB_USER/worker:\$GIT_COMMIT ./worker
-                    ${dockerBin} push \$DOCKER_HUB_USER/worker:\$GIT_COMMIT
-                    """
-
-                    // Analyze and fail on critical or high vulnerabilities
-                    sh "docker-scout cves \$DOCKER_HUB_USER/worker:\$GIT_COMMIT --exit-code --only-severity critical,high"
-                }
-            }
-        }
-
-        stage('Build and Analyze Result Service') {
-            steps {
-                script {
-                    def dockerPath = tool name: 'Docker', type: 'Tool'
-                    def dockerBin = "${dockerPath}/bin/docker"
-
-                    // Install Docker Scout
-                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
-
-                    // Log into Docker Hub
-                    withCredentials([string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT'),
-                                     string(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER')]) {
-                        sh """
-                        echo \$DOCKER_HUB_PAT | ${dockerBin} login -u \$DOCKER_HUB_USER --password-stdin
-                        """
-                    }
-
-                    // Build and push result Docker Image
-                    sh """
-                    ${dockerBin} build --pull -t \$DOCKER_HUB_USER/result:\$GIT_COMMIT ./result
-                    ${dockerBin} push \$DOCKER_HUB_USER/result:\$GIT_COMMIT
-                    """
-
-                    // Analyze and fail on critical or high vulnerabilities
-                    sh "docker-scout cves \$DOCKER_HUB_USER/result:\$GIT_COMMIT --exit-code --only-severity critical,high"
                 }
             }
         }
