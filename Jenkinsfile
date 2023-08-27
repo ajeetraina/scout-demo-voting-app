@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'docker:17.09.1-ce' // Use a Docker image that has Docker installer
-            args "--group-add docker
+            args "--group-add docker"
         }
     }
 
