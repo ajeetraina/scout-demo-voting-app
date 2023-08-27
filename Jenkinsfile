@@ -2,6 +2,8 @@ pipeline {
     agent any
 
     environment {
+        DOCKER_HUB_USER = 'ajeetraina'
+        DOCKER_HUB_PAT = credentials('DOCKER_HUB_PAT')
         IMAGE_TAG_VOTE = 'ajeetraina/scout-demo-voting-app-vote'
         IMAGE_TAG_RESULT = 'ajeetraina/scout-demo-voting-app-result'
         IMAGE_TAG_WORKER = 'ajeetraina/scout-demo-voting-app-worker'
