@@ -15,7 +15,8 @@ pipeline {
 
                     // Install Docker Scout
                     sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin'
-
+                    echo $DOCKER_HUB_PAT | docker login -u $DOCKER_HUB_USER --password-stdin
+                    
                     // Build and tag Docker image for vote service
                     sh 'docker build -t $IMAGE_TAG_VOTE ./vote'
 
