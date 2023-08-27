@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:20' // Use a Docker image that has Docker installed
+            args '--group-add $(stat -c %g /var/run/docker.sock)' // Grants access to Docker socket
+        }
+    }
 
     environment {
         DOCKER_HUB_USER = credentials('DOCKER_HUB_USER')
