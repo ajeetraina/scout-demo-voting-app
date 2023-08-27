@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_TAG = 'your-image-tag:latest' // Replace with your image tag
+        IMAGE_TAG = 'ajeetraina/scout-demo-voting-app-vote' 
     }
 
     stages {
