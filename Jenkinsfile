@@ -19,7 +19,7 @@ pipeline {
 
                     // Log into Docker Hub
                     withCredentials([
-                        usernameColonPassword(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER_CRED'),
+                        usernameColonPassword(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER'),
                         string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')
                     ]) {
                         sh """
