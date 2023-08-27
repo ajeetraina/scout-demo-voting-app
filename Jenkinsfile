@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        dockerPath = tool name: 'Docker', type: 'Tool'
-        dockerBin = "${dockerPath}/bin/docker"
+        dockerBin = '/usr/bin/docker' // Replace with the actual path to the docker binary on your system
     }
 
     stages {
