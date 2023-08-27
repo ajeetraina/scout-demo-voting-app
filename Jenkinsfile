@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'jenkinsci/blueocean' // Use a Docker image that has Docker and Jenkins tools
-            args "--group-add docker"
+            image 'jenkinsci/blueocean'
+            args "--group-add docker --entrypoint ''" // Disable entrypoint
         }
     }
 
@@ -10,12 +10,11 @@ pipeline {
         DOCKER_HUB_USER = credentials('DOCKER_HUB_USER')
         DOCKER_HUB_PAT = credentials('DOCKER_HUB_PAT')
     }
-    
+
     stages {
         stage('Build and Analyze Vote Service') {
             steps {
                 script {
-                    // Install Docker Scout
                     sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
 
                     // Log into Docker Hub
