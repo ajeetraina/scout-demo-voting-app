@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'jenkinsci/blueocean'
+            image 'jenkinsci/blueocean:latest'
             args "--group-add docker --entrypoint ''" // Disable entrypoint
         }
     }
