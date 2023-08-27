@@ -24,6 +24,7 @@ pipeline {
                     ]) {
                         sh """
                         echo \$DOCKER_HUB_PAT | docker login -u \$DOCKER_HUB_USER_CRED --password-stdin
+
                         """
                     }
 
