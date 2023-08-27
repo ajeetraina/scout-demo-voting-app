@@ -19,12 +19,12 @@ pipeline {
                     sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b $WORKSPACE'
 
                     // Log into Docker Hub
-                   withCredentials([usernameColonPassword(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER_CRED'),
-                       string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')]) {
-                       sh """
-                       echo \$DOCKER_HUB_PAT | ${dockerBin} login -u \$DOCKER_HUB_USER_CRED --password-stdin
-                       """
-                     }
+                    withCredentials([usernameColonPassword(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER_CRED'),
+                                     string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT')]) {
+                        sh """
+                        echo \$DOCKER_HUB_PAT | docker login -u \$DOCKER_HUB_USER_CRED --password-stdin
+                        """
+                    }
 
                     // Build and push vote Docker Image
                     sh """
