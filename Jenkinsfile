@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_HUB_USER = ajeetraina
+        DOCKER_HUB_USER = "ajeetraina"
         DOCKER_HUB_PAT = credentials('DOCKER_HUB_PAT')
     }
     
