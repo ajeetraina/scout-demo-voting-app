@@ -1,47 +1,37 @@
 trigger:
 - main
 
-pr:
-- '*'
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+  image: 'vonwig/nodejs-service'
 
 stages:
 - stage: Build
+  displayName: Build image
   jobs:
-  - job: BuildServices
-    displayName: 'Build and Scan Services'
+  - job: Build
+    displayName: Build
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: ubuntu-latest
     steps:
-      - checkout: self
-
-      - task: UseNode@2
-        inputs:
-          versionSpec: '14.x'
-          checkLatest: true
-          installationPath: $(Agent.ToolsDirectory)/node
-
-      - script: echo Building and scanning services...
-        displayName: 'Build and Scan Services'
-
-      - script: |
-          npm install -g @docker/scout-cli
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        command: build
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        repository: $(image)
+        tags: |
+          $(tag)
+    - task: CmdLine@2
+      displayName: Find CVEs on image
+      inputs:
+        script: |
+          # Install the Docker Scout CLI
+          curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s --
+          # Login to Docker Hub required for Docker Scout CLI
           docker login -u $(DOCKER_HUB_USER) -p $(DOCKER_HUB_PAT)
-        displayName: 'Setup and Login'
-
-      - script: |
-          docker build --pull -t $(DOCKER_HUB_USER)/vote:$(Build.SourceBranchName) ./vote
-          docker push $(DOCKER_HUB_USER)/vote:$(Build.SourceBranchName)
-          docker scout cves $(DOCKER_HUB_USER)/vote:$(Build.SourceBranchName) --exit-code --only-severity critical,high
-        displayName: 'Build, Push, and Scan Vote Service'
-
-      - script: |
-          docker build --pull -t $(DOCKER_HUB_USER)/worker:$(Build.SourceBranchName) ./worker
-          docker push $(DOCKER_HUB_USER)/worker:$(Build.SourceBranchName)
-          docker scout cves $(DOCKER_HUB_USER)/worker:$(Build.SourceBranchName) --exit-code --only-severity critical,high
-        displayName: 'Build, Push, and Scan Worker Service'
-
-      - script: |
-          docker build --pull -t $(DOCKER_HUB_USER)/result:$(Build.SourceBranchName) ./result
-          docker push $(DOCKER_HUB_USER)/result:$(Build.SourceBranchName)
-          docker scout cves $(DOCKER_HUB_USER)/result:$(Build.SourceBranchName) --exit-code --only-severity critical,high
-        displayName: 'Build, Push, and Scan Result Service'
+          # Get a CVE report for the built image and fail the pipeline when critical or high CVEs are detected
+          docker scout cves $(image):$(tag) --exit-code --only-severity critical,high
