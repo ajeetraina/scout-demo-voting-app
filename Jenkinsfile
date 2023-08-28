@@ -14,7 +14,7 @@ pipeline {
                     checkout scm
 
                     // Install Docker Scout
-                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin'
+                    sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh |  sh -s -- -b ~/bin'
                     
                     // Retrieve the Docker Hub PAT from credentials
                     def dockerHubPat = credentials('docker-hub-pat')
