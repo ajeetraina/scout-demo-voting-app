@@ -18,6 +18,13 @@ stages {
                 // Install Docker Scout
                 sh 'curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b ~/bin'
 
+                // Log into Docker Hub
+                withCredentials([string(credentialsId: 'DOCKER_HUB_PAT', variable: 'DOCKER_HUB_PAT'),
+                                string(credentialsId: 'DOCKER_HUB_USER', variable: 'DOCKER_HUB_USER')]) {
+                                sh """
+                              echo \$DOCKER_HUB_PAT | ${dockerBin} login -u \$DOCKER_HUB_USER --password-stdin
+                              """
+
                 // Build and tag Docker image for vote service
                 sh "docker build -t ${IMAGE_TAG_VOTE} ./vote"
 
