@@ -6,7 +6,7 @@ environment {
     IMAGE_TAG_RESULT = 'ajeetraina/scout-demo-voting-app-result'
     IMAGE_TAG_WORKER = 'ajeetraina/scout-demo-voting-app-worker'
     DOCKER_HUB_PAT = credentials('docker-hub-pat')
-    DOCKER_HUB_USER = ajeetraina
+    DOCKER_HUB_USER = 'ajeetraina'
 }
 
 stages {
