@@ -6,7 +6,7 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
-  image: 'vonwig/nodejs-service'
+  image: 'ajeetraina/scout-demo-voting-app-vote'
 
 stages:
 - stage: Build
