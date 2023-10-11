@@ -1,0 +1,31 @@
+# Stage 1: Build dependencies
+FROM node:20-slim AS builder
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+  curl \
+  tini \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# have nodemon available for local dev use (file watching)
+RUN npm install -g nodemon
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Stage 2: Build runtime image
+FROM node:20-slim
+
+# Copy the built code from the builder stage
+COPY --from=builder /app /app
+
+# Make port 80 available for links and/or publish
+EXPOSE 80
+
+ENV PORT 80
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["node", "server.js"]
